@@ -70,7 +70,8 @@ export default {
       showStyle: 'listStyle',
       collectIcon: '',
       collectFormVisible: false,
-      colIndex: -1
+      colIndex: -1,
+      loginStatus: false
     }
   },
   methods: {
@@ -79,15 +80,24 @@ export default {
     },
     // 用于判断是否打开收藏夹对话框，还是直接取消收藏
     isDialogView (index) {
-      // 根据传入的index找到对应元素的图标,并判断该元素是否为被收藏状态
-      if (this.articleList[index].isOn) {
-        // 取消收藏
-        this.articleList[index].isOn = false
+      // 未登录状态不能使用收藏功能
+      if (this.loginStatus) {
+        // 根据传入的index找到对应元素的图标,并判断该元素是否为被收藏状态
+        if (this.articleList[index].isOn) {
+          // 取消收藏
+          this.articleList[index].isOn = false
+        } else {
+          // 打开对话框
+          this.collectFormVisible = true
+          // 传入选择元素的索引
+          this.colIndex = index
+        }
       } else {
-        // 打开对话框
-        this.collectFormVisible = true
-        // 传入选择元素的索引
-        this.colIndex = index
+        // 未登录状态，提示登录才能使用收藏功能。
+        this.$alert('<span>收藏文章需要先进行登录</span>', '提示', {
+          dangerouslyUseHTMLString: true,
+          center: true
+        })
       }
     },
     // 用于判断该元素是否被添加进收藏夹
@@ -96,9 +106,6 @@ export default {
       if (this.articleList[value[0]].isOn === false) {
         // 根据返回值激活收藏状态
         this.articleList[value[0]].isOn = value[1]
-      } else {
-        // 测试
-        // console.log('收藏状态依然调用该函数则应修改')
       }
       // 需要将对话框状态转换关闭
       this.collectFormVisible = false

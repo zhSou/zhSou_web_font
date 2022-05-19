@@ -15,7 +15,8 @@ import {
   Form,
   FormItem,
   Checkbox,
-  Divider
+  Divider,
+  MessageBox
 } from 'element-ui'
 
 Vue.use(Container)
@@ -34,3 +35,8 @@ Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Checkbox)
 Vue.use(Divider)
+
+Vue.prototype.$msgbox = MessageBox
+Vue.prototype.$alert = MessageBox.alert
+Vue.prototype.$confirm = MessageBox.confirm
+Vue.prototype.$prompt = MessageBox.prompt

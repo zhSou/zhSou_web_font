@@ -40,7 +40,6 @@
 <script>
 // 引入头部导航组件
 import SearchHead from '@/components/SearchHead.vue'
-// import SearchMain from '@/views/SearchMain.vue'
 
 export default {
   name: 'LAYOUT',
@@ -74,6 +73,9 @@ export default {
   opacity: 0.8;
 }
 .el-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 100%;
   width: 100%;
 }
