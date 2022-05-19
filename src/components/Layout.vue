@@ -27,10 +27,9 @@
           <!-- 引入导航自定义组件 -->
           <search-head></search-head>
         </el-header>
-        <!-- 搜索输入主界面 -->
+        <!-- 主界面显示区域 -->
         <el-main>
-          <!-- 引入搜索框主页面自定义组件 -->
-          <!-- <search-main></search-main> -->
+          <!-- 根据路由跳转显示不同页面 -->
           <router-view></router-view>
         </el-main>
       </el-container>

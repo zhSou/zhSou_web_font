@@ -19,17 +19,21 @@
                     <div>{{item.description}}</div>
                     <i class="collect"
                     :class="articleList[index].isOn ? 'el-icon-star-on collected' : 'el-icon-star-off'"
-                    @click="isCollect(index)"></i>
+                    @click="isDialogView(index)"></i>
                 </div>
             </div>
         </div>
+        <!-- 引入添加入收藏夹弹窗组件 -->
+        <add-collect :show="collectFormVisible" @colStatus="colStatus" :colIndex="colIndex"></add-collect>
     </div>
 </template>
 
 <script>
+import addCollect from '@/components/AddCollect.vue'
+
 export default {
   name: 'SearchMain',
-  components: {},
+  components: { addCollect },
   data () {
     return {
       form: {
@@ -64,23 +68,40 @@ export default {
         }
       ],
       showStyle: 'listStyle',
-      collectIcon: ''
+      collectIcon: '',
+      collectFormVisible: false,
+      colIndex: -1
     }
   },
   methods: {
     imgSearch () {
       // 图片搜索
     },
-    isCollect (index) {
+    // 用于判断是否打开收藏夹对话框，还是直接取消收藏
+    isDialogView (index) {
       // 根据传入的index找到对应元素的图标,并判断该元素是否为被收藏状态
       if (this.articleList[index].isOn) {
-        // 被收藏状态，取消收藏
-        this.articleList[index].isOn = !this.articleList[index].isOn
+        // 取消收藏
+        this.articleList[index].isOn = false
       } else {
-        // 打开对话框弹窗，选择收藏夹
-        // 未收藏状态，切换为收藏图标
-        this.articleList[index].isOn = !this.articleList[index].isOn
+        // 打开对话框
+        this.collectFormVisible = true
+        // 传入选择元素的索引
+        this.colIndex = index
       }
+    },
+    // 用于判断该元素是否被添加进收藏夹
+    colStatus (value) {
+      // 当前状态为未收藏状态，需要判断打开收藏夹后是否进行收藏了
+      if (this.articleList[value[0]].isOn === false) {
+        // 根据返回值激活收藏状态
+        this.articleList[value[0]].isOn = value[1]
+      } else {
+        // 测试
+        // console.log('收藏状态依然调用该函数则应修改')
+      }
+      // 需要将对话框状态转换关闭
+      this.collectFormVisible = false
     }
   }
 }
