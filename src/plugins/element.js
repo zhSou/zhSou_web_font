@@ -16,7 +16,8 @@ import {
   FormItem,
   Checkbox,
   Divider,
-  MessageBox
+  MessageBox,
+  Tooltip
 } from 'element-ui'
 
 Vue.use(Container)
@@ -35,6 +36,7 @@ Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Checkbox)
 Vue.use(Divider)
+Vue.use(Tooltip)
 
 Vue.prototype.$msgbox = MessageBox
 Vue.prototype.$alert = MessageBox.alert

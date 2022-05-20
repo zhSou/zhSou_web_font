@@ -2,26 +2,40 @@
     <div class="searchMain">
         <!-- 输入框 -->
         <div class="searchBox">
-            <el-input placeholder="请输入搜索内容" v-model="form.input">
-                <i slot="suffix" class="el-icon-camera" @click="imgSearch"></i>
-                <el-button slot="append" icon="el-icon-search"></el-button>
-            </el-input>
+          <!-- 搜索输入框 -->
+          <el-input placeholder="请输入搜索内容" v-model="form.input">
+            <i slot="suffix" class="el-icon-close" v-show="form.input !== ''" @click="form.input = ''"></i>
+            <i slot="suffix" class="el-icon-camera" @click="imgSearch"></i>
+            <el-button slot="append" icon="el-icon-search"></el-button>
+          </el-input>
+          <!-- 展示图标选择 -->
+          <span>
+            <i class="iconfont icon-menu" @click="showStyle = 'listStyle'"></i>
+            <i class="iconfont icon-modular" @click="showStyle = 'thumbnails'"></i>
+          </span>
         </div>
+        <!-- 引入屏蔽词汇组件 -->
+        <el-card class="shield" :class="shieldShow ? 'shieldHeight' : ''">
+          <div @click="shieldShow = !shieldShow" class="set">
+            屏蔽词汇设置
+            <i :class="'el-icon-arrow-' + `${shieldShow ? 'down' : 'up'}`"></i>
+          </div>
+          <shield-view></shield-view>
+        </el-card>
         <!-- 文章区域 -->
         <div class="contentList" v-show="articleList.length!==0" :class="showStyle">
-            <!-- 图片缩略图循环 -->
-            <div :class="showStyle + 'Article'" v-for="(item, index) in articleList"
-            :key="index">
-                <!-- 图片 -->
-                <el-image :src="item.url" fit="contain"></el-image>
-                <!-- 文字描述部分 -->
-                <div :class="showStyle + 'ImgDec'">
-                    <div>{{item.description}}</div>
-                    <i class="collect"
-                    :class="articleList[index].isOn ? 'el-icon-star-on collected' : 'el-icon-star-off'"
-                    @click="isDialogView(index)"></i>
-                </div>
-            </div>
+          <!-- 图片缩略图循环 -->
+          <div :class="showStyle + 'Article'" v-for="(item, index) in articleList"
+          :key="index">
+              <!-- 图片 -->
+              <el-image :src="item.url" fit="contain"></el-image>
+              <!-- 文字描述部分 -->
+              <div :class="showStyle + 'ImgDec'">
+                <div>{{item.description}}</div>
+                <i :class="articleList[index].isOn ? 'el-icon-star-on collected' : 'el-icon-star-off'"
+                @click="isDialogView(index)"></i>
+              </div>
+          </div>
         </div>
         <!-- 引入添加入收藏夹弹窗组件 -->
         <add-collect :show="collectFormVisible" @colStatus="colStatus" :colIndex="colIndex"></add-collect>
@@ -30,10 +44,14 @@
 
 <script>
 import addCollect from '@/components/AddCollect.vue'
+import shieldView from '@/components/ShieldView.vue'
 
 export default {
   name: 'SearchMain',
-  components: { addCollect },
+  components: {
+    addCollect,
+    shieldView
+  },
   data () {
     return {
       form: {
@@ -67,11 +85,12 @@ export default {
           isOn: true
         }
       ],
+      shieldShow: true,
       showStyle: 'listStyle',
       collectIcon: '',
       collectFormVisible: false,
       colIndex: -1,
-      loginStatus: false
+      loginStatus: true
     }
   },
   methods: {
@@ -117,32 +136,74 @@ export default {
 <style lang="less" scoped>
 // 整体样式
 .searchMain {
-    width: 100%;
-    height: 100%;
-    margin: 0 auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
 }
 // 搜索框样式
 .searchBox {
-    text-align: center;
-    .el-input {
-    width: 30%;
+  width: 50%;
+  margin: 0 auto;
+  padding: 10px;
+  text-align: center;
+  border: 2px solid #E4E7ED;
+  border-radius: 5px;
+  line-height: 40px;
+  background-color: #E4E7ED;
+  .el-input {
+    width: 60%;
     font-size: 20px;
-    // 以图搜索图标样式
+  }
+  i {
+    line-height: 40px;
+    font-size: 20px;
+    margin-right: 5px;
+  }
+  i:hover {
+    color: #409EFF;
+    cursor: pointer;
+  }
+  span {
+    margin-left: 25px;
     i {
-        line-height: 40px;
-        margin-right: 5px;
+      margin-right: 10px;
     }
-    i:hover {
-        color: #409EFF;
-        cursor: pointer;
-    }
+  }
 }
+// 屏蔽词汇
+.shield {
+  position: absolute;
+  top: 10px;
+  right: 30px;
+  width: 200px;
+  z-index: 1000;
+  overflow: hidden;
+  /deep/.el-card__body {
+  padding-top: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
+    .set {
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    .set:hover {
+      color: #409EFF;
+    }
+  }
+}
+.shieldHeight {
+  height: 40px;
 }
 // 文章动态展示区
 .contentList {
   width: 80%;
   margin: 20px auto;
   padding-bottom: 20px;
+  span {
+    float: right;
+  }
   i {
     font-size: 20px;
   }
@@ -163,14 +224,20 @@ export default {
     min-width: 150px;
     max-width: 23%;
     margin-bottom: 20px;
+    border: 2px solid #E4E7ED;
+    border-radius: 5px;
+    background-color: #E4E7ED;
     .thumbnailsImgDec {
+      display: flex;
+      justify-content: space-around;
       div {
         font-size: 0.5em;
-        float: left;
-        width: 90%;
-      }
-      i {
-        float: right;
+        padding-right: 5px;
+        overflow : hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
     }
   }
