@@ -47,7 +47,7 @@ export default {
         name: '用户名',
         photoUrl: require('@/assets/usrPhoto.png')
       },
-      loginStatus: false
+      loginStatus: true
     }
   },
   methods: {
