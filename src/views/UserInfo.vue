@@ -1,16 +1,14 @@
 <template>
     <div id="userInfo">
       <div class="userTitle">
-        <ul class="infoShow">
-          <li>
+        <span>
             用户名：{{username}}
-          </li>
-          <li>
+        </span>
+          <span>
             邮箱：{{emali}}
-          </li>
-        </ul>
+        </span>
       </div>
-      <collect-drop-down class="collect"></collect-drop-down>
+      <collect-drop-down class="collect" showStyle="thumbnails"></collect-drop-down>
     </div>
 </template>
 
@@ -33,29 +31,28 @@ export default {
 #userInfo {
   display: grid;
   grid-template-columns: auto;
-  grid-template-rows: 200px calc(100% - 200px);
-  width: 50%;
+  grid-row-gap: 20px;
+  grid-template-rows: 100px calc(100% - 100px);
+  width: 70%;
   height: 100%;
   flex-direction: column;
-  border: 2px white solid;
   // 信息展示区域
-  .userTitle {
-    height: 200px;
-    padding: 10px 15px 10px 30px;
-    color: white;
-    li {
-      list-style-type: none;
+  div {
+    background-color: #ffffff;
+    border-radius: 2px;
+    span {
       padding: 10px;
-      margin-bottom: 20px;
     }
-    .infoShow {
-      float: left;
+  }
+  .userTitle {
+    line-height: 100px;
+    span:first-child {
+      margin-left: 50px;
     }
   }
   // 收藏夹区域
   .collect {
     height: 100%;
-    color: white;
   }
 }
 

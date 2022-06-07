@@ -28,7 +28,7 @@
                     </span>
                     <el-dropdown-menu slot="dropdown" class="collectFilder">
                         <!-- 引入收藏夹下拉菜单组件 -->
-                        <collect-drop-down></collect-drop-down>
+                        <collect-drop-down showStyle="listStyle"></collect-drop-down>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
@@ -125,8 +125,8 @@ export default {
     }
 }
 .collectFilder {
-    width: 350px;
-    height: 100px;
+    width: 500px;
+    height: 300px;
 }
 
 </style>
