@@ -16,16 +16,19 @@
                         {{usr.name}}<i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>个人中心</el-dropdown-item>
-                        <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
+                        <el-dropdown-item @click.native="gotoUserInfo">
+                            个人中心
+                        </el-dropdown-item>
+                        <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
-                <el-dropdown>
+                <el-dropdown trigger="click">
                     <span class="el-dropdown-link">
                         收藏夹
                     </span>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>待设置</el-dropdown-item>
+                    <el-dropdown-menu slot="dropdown" class="collectFilder">
+                        <!-- 引入收藏夹下拉菜单组件 -->
+                        <collect-drop-down></collect-drop-down>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
@@ -38,22 +41,37 @@
 </template>
 
 <script>
+import collectDropDown from '@/components/CollectDropDown.vue'
+import { delTokenStr } from '@/utils/storage.js'
 export default {
   name: 'SearchHead',
-  components: { },
+  components: { collectDropDown },
   data () {
     return {
       usr: {
         name: '用户名',
         photoUrl: require('@/assets/usrPhoto.png')
-      },
-      loginStatus: true
+      }
+    }
+  },
+  computed: {
+    loginStatus () {
+      return this.$store.state.token
     }
   },
   methods: {
     // 退出登录
     logout () {
-      this.loginStatus = false
+      delTokenStr()
+      this.$store.state.token = ''
+      this.$message({
+        message: '已退出登录',
+        type: 'success'
+      })
+    },
+    // 跳转
+    gotoUserInfo () {
+      this.$router.push('/userInfo')
     }
   }
 }
@@ -106,4 +124,9 @@ export default {
       color: #409EFF;
     }
 }
+.collectFilder {
+    width: 350px;
+    height: 100px;
+}
+
 </style>

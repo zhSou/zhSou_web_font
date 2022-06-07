@@ -15,11 +15,15 @@ import {
   Form,
   FormItem,
   Checkbox,
+  CheckboxGroup,
   Divider,
+  Message,
   MessageBox,
-  Tooltip
+  Tooltip,
+  Aside
 } from 'element-ui'
 
+Vue.use(Aside)
 Vue.use(Container)
 Vue.use(Header)
 Vue.use(Main)
@@ -35,6 +39,7 @@ Vue.use(Dialog)
 Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Checkbox)
+Vue.use(CheckboxGroup)
 Vue.use(Divider)
 Vue.use(Tooltip)
 
@@ -42,3 +47,4 @@ Vue.prototype.$msgbox = MessageBox
 Vue.prototype.$alert = MessageBox.alert
 Vue.prototype.$confirm = MessageBox.confirm
 Vue.prototype.$prompt = MessageBox.prompt
+Vue.prototype.$message = Message

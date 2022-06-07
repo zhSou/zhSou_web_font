@@ -7,12 +7,16 @@ import './plugins/element.js'
 import '@/assets/gloable.css'
 // 引入字体图标样式
 import '@/assets/font/iconfont.css'
+
 // 引入动态背景vue-particles
 import VueParticles from 'vue-particles'
+
+import store from './store'
 Vue.use(VueParticles)
 
 Vue.config.productionTip = false
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')
