@@ -12,8 +12,7 @@
             <div v-if="loginStatus">
                 <el-dropdown>
                     <span class="el-dropdown-link">
-                        <el-avatar size="large" :src="usr.photoUrl"></el-avatar>
-                        {{usr.name}}<i class="el-icon-arrow-down el-icon--right"></i>
+                      {{user.userName}}<i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item @click.native="gotoUserInfo">
@@ -43,20 +42,23 @@
 <script>
 import collectDropDown from '@/components/CollectDropDown.vue'
 import { delTokenStr } from '@/utils/storage.js'
+
 export default {
   name: 'SearchHead',
   components: { collectDropDown },
   data () {
     return {
-      usr: {
-        name: '用户名',
-        photoUrl: require('@/assets/usrPhoto.png')
-      }
     }
   },
   computed: {
     loginStatus () {
+      if (this.$store.state.token !== '') {
+        this.$store.dispatch('userInfo')
+      }
       return this.$store.state.token
+    },
+    user () {
+      return this.$store.state.user
     }
   },
   methods: {
@@ -68,6 +70,7 @@ export default {
         message: '已退出登录',
         type: 'success'
       })
+      this.$router.push('/')
     },
     // 跳转
     gotoUserInfo () {

@@ -1,14 +1,15 @@
 // 导入
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { login, register } from '@/api'
+import { login, register, getUserInfo } from '@/api'
 import { setTokenStr, getTokenStr } from '@/utils/storage.js'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    token: getTokenStr() || ''
+    token: getTokenStr() || '',
+    user: {}
   },
   getters: {
   },
@@ -17,6 +18,9 @@ export default new Vuex.Store({
     setToken (state, value) {
       state.token = value
       setTokenStr(value)
+    },
+    setUser (state, value) {
+      state.user = value
     }
   },
   actions: {
@@ -38,6 +42,18 @@ export default new Vuex.Store({
         const data = res.data
         if (res.status === 200 && 'token' in data) {
           context.commit('setToken', data.token)
+        }
+        return data
+      } catch (err) {
+        throw new Error(err)
+      }
+    },
+    async userInfo (context) {
+      try {
+        const res = await getUserInfo()
+        const data = res.data
+        if (res.status === 200) {
+          context.commit('setUser', data)
         }
         return data
       } catch (err) {

@@ -2,10 +2,10 @@
     <div id="userInfo">
       <div class="userTitle">
         <span>
-            用户名：{{username}}
+            用户名：{{user.userName}}
         </span>
           <span>
-            邮箱：{{emali}}
+            邮箱：{{user.email}}
         </span>
       </div>
       <collect-drop-down class="collect" showStyle="thumbnails"></collect-drop-down>
@@ -17,11 +17,9 @@ import CollectDropDown from '@/components/CollectDropDown.vue'
 export default {
   name: 'UserInfo',
   components: { CollectDropDown },
-  data () {
-    return {
-      id: '',
-      username: '',
-      emali: ''
+  computed: {
+    user () {
+      return this.$store.state.user
     }
   }
 }

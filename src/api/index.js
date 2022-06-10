@@ -22,6 +22,12 @@ export const register = (params) => Require({
   data: params
 })
 
+// 获取个人信息请求
+export const getUserInfo = () => Require({
+  url: '/api/getUserInfo',
+  method: 'post'
+})
+
 // 获取个人收藏夹请求
 export const getFolders = (params) => Require({
   url: '/api/getFolderByUser',
@@ -29,6 +35,27 @@ export const getFolders = (params) => Require({
 })
 
 // 获取个人收藏夹请求
+export const getFavoriteByFolder = (params) => Require({
+  url: '/api/getFavoriteByFolder',
+  method: 'post',
+  data: params
+})
+
+// 删除收藏请求
+export const delFavorite = (params) => Require({
+  url: '/api/delFavorite',
+  method: 'post',
+  data: params
+})
+
+// 将收藏内容移动到新的收藏夹请求
+export const updateFavorite = (params) => Require({
+  url: '/api/updateFavorite',
+  method: 'post',
+  data: params
+})
+
+// 新增个人收藏夹请求
 export const addFolders = (params) => Require({
   url: '/api/addFolder',
   method: 'post',

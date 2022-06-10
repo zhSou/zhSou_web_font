@@ -3,7 +3,9 @@ const TOKEN_STR = 'token'
 
 // 获取token对象
 export const getTokenStr = () => {
-  return JSON.parse(localStorage.getItem(TOKEN_STR))
+  if (sessionStorage.getItem(TOKEN_STR) !== null) {
+    return JSON.parse()
+  }
 }
 
 /**
@@ -11,12 +13,14 @@ export const getTokenStr = () => {
  */
 export const setTokenStr = (tokenObj) => {
   // 把tokenObj这个对象，保存到localstorage中
-  localStorage.setItem(TOKEN_STR, JSON.stringify(tokenObj))
+  if (tokenObj !== '' && tokenObj !== null) {
+    sessionStorage.setItem(TOKEN_STR, JSON.stringify(tokenObj))
+  }
 }
 
 /**
  * 删除token
  */
 export const delTokenStr = () => {
-  localStorage.removeItem(TOKEN_STR)
+  sessionStorage.removeItem(TOKEN_STR)
 }

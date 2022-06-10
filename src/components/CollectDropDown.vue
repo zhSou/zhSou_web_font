@@ -2,27 +2,73 @@
     <div id="collectDropDown">
       <div class="collectAside">
         <ul>
-          <li v-for="(folder,index) in folders" :key="index">
-            {{folder}}
+          <li @click="newVisible = true">新建收藏夹</li>
+          <li v-for="(folder,index) in folders" :key="index" class="hoverLi">
+            <div class="folderName" @click="getArticles(folder)">{{folder}}</div>
+            <span class="folderBtns">
+              <i class="el-icon-edit" @click="reNameVisible = true; oldName = folder"></i>
+              <i class="el-icon-close" @click="deleteFolder(folder, index)"></i>
+            </span>
           </li>
         </ul>
       </div>
       <div class="collectMain" :class="show">
         <!-- 图片缩略图循环 -->
-        <div :class="show + 'Article'" v-for="(item, index) in articles"
-        :key="index">
+        <div :class="show + 'Article'" v-for="item in articles"
+        :key="item.aid">
           <!-- 图片 -->
           <el-image :src="item.url" fit="contain"></el-image>
           <!-- 文字描述部分 -->
           <div :class="show + 'ImgDec'">
-            <div>{{item.description}}</div>
+            <div>{{item.raw}}</div>
           </div>
+          <!-- 按钮 -->
+          <el-dropdown :class="show + 'Btns'">
+            <i class="el-icon-more"></i>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>取消收藏</el-dropdown-item>
+              <el-dropdown-item>移动到</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </div>
+      <!-- 新增收藏夹对话框 -->
+      <el-dialog title="新增收藏夹" :visible.sync="newVisible"
+      center width="30%" :modal="false">
+        <el-input
+          placeholder="请输入收藏夹名称，长度不超过20个字符"
+          v-model="createName" maxlength="20" clearable>
+        </el-input>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="newFolder">确 定</el-button>
+          <el-button @click="newVisible = false; createName = '';">取 消</el-button>
+        </div>
+      </el-dialog>
+      <!-- 重命名收藏夹对话框 -->
+      <el-dialog title="收藏夹重命名" :visible.sync="reNameVisible"
+      center width="30%" :modal="false">
+        <el-input
+          placeholder="请输入收藏夹名称，长度不超过20个字符"
+          v-model="newName" maxlength="20" clearable>
+        </el-input>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="reName">确 定</el-button>
+          <el-button @click="reNameVisible = false; newName = ''; oldName = '';">取 消</el-button>
+        </div>
+      </el-dialog>
     </div>
 </template>
 
 <script>
+import {
+  getFolders,
+  addFolders,
+  delFolder,
+  reNameFolder,
+  getFavoriteByFolder,
+  delFavorite,
+  updateFavorite
+} from '@/api'
 export default {
   name: 'CollectDropDown',
   props: {
@@ -36,58 +82,205 @@ export default {
     showStyle: {
       handler (newValue) {
         this.show = newValue
-        console.log(this.show)
       },
       // 这里增加了一个immediate属性，说明监听到props传参后立即先去执行handler方法
       immediate: true
+    },
+    folders: {
+      handler (newValue) {
+        console.log(newValue)
+      },
+      immediate: true
     }
+  },
+  mounted () {
+    this.getUserFolders()
+    this.getArticles(this.folders[0])
   },
   data () {
     return {
-      folders: [
-        '默认收藏夹sadfasdfasdfd',
-        '默认收藏夹',
-        '默认收藏夹'
-      ],
-      articles: [
-        {
-          aid: '2515152',
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
-        },
-        {
-          aid: '2515152',
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
-        },
-        {
-          aid: '2515152',
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
-        },
-        {
-          aid: '2515152',
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
-        },
-        {
-          aid: '2515152',
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
-        },
-        {
-          aid: '2515152',
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
+      articles: [],
+      folders: [],
+      show: '',
+      newVisible: false,
+      createName: '',
+      reNameVisible: false,
+      newName: '',
+      oldName: ''
+    }
+  },
+  methods: {
+    // 获取收藏夹列表
+    async getUserFolders () {
+      try {
+        const res = await getFolders()
+        if (res.status === 200) {
+          this.folders = res.data.data
+        } else {
+          this.$message({
+            message: '获取收藏夹失败',
+            type: 'error'
+          })
         }
-      ],
-      show: ''
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
+    },
+    // 获取收藏夹内容
+    async getArticles (name) {
+      try {
+        const res = await getFavoriteByFolder({
+          folderName: name
+        })
+        console.log(res.data)
+        if (res.status === 200) {
+          this.articles = res.data
+        } else {
+          this.$message({
+            message: '获取文章失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
+    },
+    // 新增收藏夹
+    async newFolder () {
+      if (this.createName !== '') {
+        try {
+          const res = await addFolders({
+            name: this.createName
+          })
+          if (res.status === 200) {
+            this.newVisible = false
+            this.folders.push(this.createName)
+            this.createName = ''
+          } else {
+            this.$message({
+              message: '添加收藏夹失败',
+              type: 'error'
+            })
+          }
+        } catch (err) {
+          this.$message({
+            message: '网络请求错误',
+            type: 'error'
+          })
+        }
+      } else {
+        this.$message({
+          message: '收藏夹名称不能为空',
+          type: 'error'
+        })
+      }
+    },
+    // 重命名收藏夹
+    async reName () {
+      if (this.newName !== '') {
+        try {
+          const res = await reNameFolder({
+            oldName: this.oldName,
+            newName: this.newName
+          })
+          if (res.status === 200) {
+            this.reNameVisible = false
+            const index = this.folders.indexOf(this.oldName)
+            this.folders[index] = this.newName
+            this.newName = ''
+          } else {
+            this.$message({
+              message: '重命名收藏夹失败',
+              type: 'error'
+            })
+          }
+        } catch (err) {
+          this.$message({
+            message: '网络请求错误',
+            type: 'error'
+          })
+        }
+      } else {
+        this.$message({
+          message: '收藏夹名称不能为空',
+          type: 'error'
+        })
+      }
+    },
+    // 删除收藏夹
+    async deleteFolder (name, index) {
+      try {
+        const res = await delFolder({
+          folderName: name
+        })
+        console.log(res)
+        if (res.status === 200) {
+          this.folders.splice(index, 1)
+        } else {
+          this.$message({
+            message: '删除收藏夹失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
+    },
+    // 删除收藏内容
+    async deleteArticle (name, index) {
+      try {
+        const res = await delFavorite({
+          aid: index,
+          folderName: name
+        })
+        console.log(res)
+        if (res.status === 200) {
+          this.articles.splice(index, 1)
+        } else {
+          this.$message({
+            message: '取消收藏失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
+    },
+    // 移动收藏内容至其他收藏夹
+    async moveArticle (name, value, index) {
+      try {
+        const res = await updateFavorite({
+          aid: index,
+          folderName: name,
+          newName: value
+        })
+        console.log(res)
+        if (res.status === 200) {
+          this.articles.splice(index, 1)
+        } else {
+          this.$message({
+            message: '移动失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
     }
   }
 }
@@ -100,24 +293,37 @@ export default {
     margin: 0;
     height: 100%;
     li {
+      position: relative;
       padding: 15px;
       font-size: 14px;
       list-style-type: none;
       font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      .folderBtns {
+        display: none;
+      }
+      .folderName {
+        width: 70px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
     li:hover {
       background-color: #f4f4f4;
       cursor: pointer;
+      .folderBtns {
+        display: block;
+        position: absolute;
+        right: 10px;
+        top: 15px;
+      }
     }
   }
   height: 100%;
 }
 .collectAside {
   padding-top: 20px;
-  height: 100%;
+  height: 97%;
   min-width: 120px;
   width: 20%;
   max-width: 150px;
@@ -127,7 +333,7 @@ export default {
   border-right: 2px solid #eeeeee;
 }
 .collectMain {
-  height: 100%;
+  height: 97%;
   overflow: auto;
   padding-top: 20px;
 }
@@ -140,7 +346,7 @@ export default {
     width: 22%;
     height: 170px;
     padding: 0 10px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     .thumbnailsImgDec {
       div {
         font-size: 20%;
@@ -150,6 +356,11 @@ export default {
   .thumbnailsArticle:hover {
     background-color: #f4f4f4;
     cursor: pointer;
+  }
+  .thumbnailsBtns {
+    i {
+      transform:rotate(180deg);
+    }
   }
 }
 // 文章列表样式
@@ -173,6 +384,8 @@ export default {
   .listStyleArticle:hover {
     background-color: #f4f4f4;
     cursor: pointer;
+  }
+  .listStyleBtns {
   }
 }
 </style>
