@@ -28,6 +28,7 @@ export default new Vuex.Store({
       try {
         const res = await login(userInfo)
         const data = res.data
+        console.log(res)
         if (res.status === 200 && 'token' in data) {
           context.commit('setToken', data.token)
         }

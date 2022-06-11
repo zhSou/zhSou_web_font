@@ -5,7 +5,6 @@
           <!-- 搜索输入框 -->
           <el-input placeholder="请输入搜索内容" v-model="form.input">
             <i slot="suffix" class="el-icon-close" v-show="form.input !== ''" @click="form.input = ''"></i>
-            <i slot="suffix" class="el-icon-camera" @click="imgSearch"></i>
             <el-button slot="append" icon="el-icon-search"></el-button>
           </el-input>
           <!-- 展示图标选择 -->
@@ -63,7 +62,7 @@ export default {
         {
           url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
           description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: true
+          isOn: false
         }
       ],
       shieldShow: true,
@@ -79,9 +78,6 @@ export default {
     }
   },
   methods: {
-    imgSearch () {
-      // 图片搜索
-    },
     // 用于判断是否打开收藏夹对话框，还是直接取消收藏
     isDialogView (index) {
       // 未登录状态不能使用收藏功能

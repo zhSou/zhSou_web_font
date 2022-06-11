@@ -28,6 +28,12 @@ export const getUserInfo = () => Require({
   method: 'post'
 })
 
+// 用户注销请求
+export const delUser = () => Require({
+  url: '/api/delUser',
+  method: 'post'
+})
+
 // 获取个人收藏夹请求
 export const getFolders = (params) => Require({
   url: '/api/getFolderByUser',

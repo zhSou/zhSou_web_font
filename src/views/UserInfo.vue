@@ -7,6 +7,7 @@
           <span>
             邮箱：{{user.email}}
         </span>
+        <el-button @click="deleteUser">注销账号</el-button>
       </div>
       <collect-drop-down class="collect" showStyle="thumbnails"></collect-drop-down>
     </div>
@@ -14,12 +15,34 @@
 
 <script>
 import CollectDropDown from '@/components/CollectDropDown.vue'
+import { delUser } from '@/api/index'
+import { delTokenStr } from '@/utils/storage'
 export default {
   name: 'UserInfo',
   components: { CollectDropDown },
   computed: {
     user () {
       return this.$store.state.user
+    }
+  },
+  methods: {
+    async deleteUser () {
+      try {
+        const res = await delUser()
+        console.log(res)
+        if (res.status === 200) {
+          this.$store.commit('setUser', {})
+          delTokenStr()
+          this.$store.commit('setToken', '')
+          this.$router.push('home')
+          console.log('删除成功')
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
     }
   }
 }
@@ -43,9 +66,16 @@ export default {
     }
   }
   .userTitle {
+    position: relative;
     line-height: 100px;
     span:first-child {
       margin-left: 50px;
+    }
+    .el-button {
+      position: absolute;
+      top: 50%;
+      right: 50px;
+      transform: translateY(-50%);
     }
   }
   // 收藏夹区域

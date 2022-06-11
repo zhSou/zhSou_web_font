@@ -14,7 +14,7 @@
       </div>
       <div class="collectMain" :class="show">
         <!-- 图片缩略图循环 -->
-        <div :class="show + 'Article'" v-for="item in articles"
+        <div :class="show + 'Article'" v-for="(item, index) in articles"
         :key="item.aid">
           <!-- 图片 -->
           <el-image :src="item.url" fit="contain"></el-image>
@@ -26,8 +26,8 @@
           <el-dropdown :class="show + 'Btns'">
             <i class="el-icon-more"></i>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>取消收藏</el-dropdown-item>
-              <el-dropdown-item>移动到</el-dropdown-item>
+              <el-dropdown-item @click.native="deleteArticle(item, index)">取消收藏</el-dropdown-item>
+              <el-dropdown-item @click.native="moveVisible = true; currentIndex = index">移动到</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
@@ -54,6 +54,21 @@
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="reName">确 定</el-button>
           <el-button @click="reNameVisible = false; newName = ''; oldName = '';">取 消</el-button>
+        </div>
+      </el-dialog>
+      <!-- 将收藏内容移动至其他收藏夹对话框 -->
+      <el-dialog title="移动至其他收藏夹" :visible.sync="moveVisible"
+      center width="20%" :modal="false">
+        <ul>
+          <li v-for="(item,index) in folders" :key="index">
+            <el-radio v-model="movedName" :label="item" border size="medium">
+              {{item}}
+            </el-radio>
+          </li>
+        </ul>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="moveArticle">确 定</el-button>
+          <el-button @click="moveVisible = false;">取 消</el-button>
         </div>
       </el-dialog>
     </div>
@@ -95,18 +110,35 @@ export default {
   },
   mounted () {
     this.getUserFolders()
-    this.getArticles(this.folders[0])
+    this.currentName = this.folders[0]
+    this.getArticles(this.currentName)
   },
   data () {
     return {
+      // 收藏内容列表
       articles: [],
+      // 收藏夹列表
       folders: [],
+      // 收藏内容展示样式
       show: '',
+      // 新建收藏夹会话框显示状态
       newVisible: false,
+      // 新建收藏夹的名称
       createName: '',
+      // 重命名收藏夹会话框显示状态
       reNameVisible: false,
+      // 重命名收藏夹的名称
       newName: '',
-      oldName: ''
+      // 重命名收藏夹原来的名称
+      oldName: '',
+      // 当前展示的收藏夹名称
+      currentName: '',
+      // 移动收藏内容会话框显示状态
+      moveVisible: false,
+      // 移动至的文件夹名称
+      movedName: '',
+      // 当前选择的文章
+      currentIndex: -1
     }
   },
   methods: {
@@ -138,6 +170,7 @@ export default {
         console.log(res.data)
         if (res.status === 200) {
           this.articles = res.data
+          this.createName = name
         } else {
           this.$message({
             message: '获取文章失败',
@@ -236,13 +269,13 @@ export default {
       }
     },
     // 删除收藏内容
-    async deleteArticle (name, index) {
+    async deleteArticle (item, index) {
       try {
         const res = await delFavorite({
-          aid: index,
-          folderName: name
+          aid: item.aid,
+          folderName: this.currentName
         })
-        console.log(res)
+        console.log('删除收藏内容', res)
         if (res.status === 200) {
           this.articles.splice(index, 1)
         } else {
@@ -259,16 +292,18 @@ export default {
       }
     },
     // 移动收藏内容至其他收藏夹
-    async moveArticle (name, value, index) {
+    async moveArticle () {
       try {
         const res = await updateFavorite({
-          aid: index,
-          folderName: name,
-          newName: value
+          aid: this.articles[this.currentIndex].aid,
+          oldName: this.currentName,
+          newName: this.movedName
         })
         console.log(res)
         if (res.status === 200) {
-          this.articles.splice(index, 1)
+          this.articles.splice(this.currentIndex, 1)
+          this.currentIndex = -1
+          this.movedName = ''
         } else {
           this.$message({
             message: '移动失败',
