@@ -270,7 +270,6 @@ export default {
     async deleteFolder (name, index) {
       try {
         const res = await delFolder({ folderName: name })
-        console.log(res)
         if (res.status === 200) {
           // 需要更新列表
           this.collectForm.splice(index, 1)

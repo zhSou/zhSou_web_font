@@ -3,9 +3,9 @@
         <!-- 输入框 -->
         <div class="searchBox">
           <!-- 搜索输入框 -->
-          <el-input placeholder="请输入搜索内容" v-model="form.input">
+          <el-input placeholder="请输入搜索内容" v-model="form.input" @keyup.enter.native="search">
             <i slot="suffix" class="el-icon-close" v-show="form.input !== ''" @click="form.input = ''"></i>
-            <el-button slot="append" icon="el-icon-search"></el-button>
+            <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
           </el-input>
           <!-- 展示图标选择 -->
           <span>
@@ -19,7 +19,7 @@
             屏蔽词汇设置
             <i :class="'el-icon-arrow-' + `${shieldShow ? 'down' : 'up'}`"></i>
           </div>
-          <shield-view></shield-view>
+          <shield-view @shield='shieldList'></shield-view>
         </el-card>
         <!-- 文章区域 -->
         <div class="contentList" v-show="articleList.length!==0" :class="showStyle">
@@ -27,14 +27,17 @@
           <div :class="showStyle + 'Article'" v-for="(item, index) in articleList"
           :key="index">
               <!-- 图片 -->
-              <el-image :src="item.url" fit="contain"></el-image>
+              <el-image :src="item.document.url" fit="contain"></el-image>
               <!-- 文字描述部分 -->
               <div :class="showStyle + 'ImgDec'">
-                <div>{{item.description}}</div>
+                <div v-html="item.text"></div>
                 <i :class="articleList[index].isOn ? 'el-icon-star-on collected' : 'el-icon-star-off'"
                 @click="isDialogView(index)"></i>
               </div>
           </div>
+        </div>
+        <div v-show="searchShow" class="noFind">
+          查询不到相关内容
         </div>
         <!-- 引入添加入收藏夹弹窗组件 -->
         <add-collect :show="collectFormVisible" @colStatus="colStatus"
@@ -43,6 +46,7 @@
 </template>
 
 <script>
+import { getFavoritesByUser, query } from '@/api'
 import addCollect from '@/components/AddCollect.vue'
 import shieldView from '@/components/ShieldView.vue'
 
@@ -56,25 +60,27 @@ export default {
     return {
       form: {
         input: '',
-        shieldList: []
+        shieldWords: []
       },
-      articleList: [
-        {
-          url: 'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fnimg.ws.126.net%2F%3Furl%3Dhttp%253A%252F%252Fdingyue.ws.126.net%252F2021%252F0513%252F7fe81826j00qt0wen001lc000iq00bhm.jpg%26thumbnail%3D650x2147483647%26quality%3D80%26type%3Djpg&refer=http%3A%2F%2Fnimg.ws.126.net&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1632532438&t=c7b2f45a34d5a801328415a01fa934c4',
-          description: '43岁的布冯还能扑点他熬老了一大批门将也定义了一个时代',
-          isOn: false
-        }
-      ],
+      articleList: [],
       shieldShow: true,
       showStyle: 'listStyle',
       collectIcon: '',
       collectFormVisible: false,
-      colIndex: -1
+      colIndex: -1,
+      searchShow: false
     }
   },
   computed: {
     loginStatus () {
       return this.$store.state.token
+    }
+  },
+  watch: {
+    articleList: {
+      immediate: true,
+      handler () {
+      }
     }
   },
   methods: {
@@ -109,6 +115,89 @@ export default {
       }
       // 需要将对话框状态转换关闭
       this.collectFormVisible = false
+    },
+    shieldList (value) {
+      this.form.shieldWords = value
+    },
+    // 判断文章是否被收藏
+    async getCollectArticles () {
+      try {
+        const res = await getFavoritesByUser()
+        if (res.status === 200) {
+          for (const key in res.data.favorites) {
+            res.data.favorites[key].forEach(item => {
+              // 遍历每个收藏夹的文章,进行判断是否被收藏
+              this.articleList.filter((el, index) => {
+                if (el.id === item.aid) {
+                  this.$set(this.articleList[index], 'isOn', true)
+                  return true
+                } else {
+                  el.isOn = false
+                  return false
+                }
+              })
+            })
+          }
+        } else {
+          this.$message({
+            message: '获取个人收藏内容失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
+    },
+    // 搜索内容
+    async search () {
+      if (this.form.input !== '') {
+        try {
+          const res = await query({
+            query: this.form.input,
+            page: 2,
+            limit: 40,
+            filterWord: this.form.shieldWords,
+            highLight: {
+              preTag: '<span style=\'color:red\'>',
+              postTag: '</span>'
+            }
+          })
+          if (res.status === 200 && res.data.code === 0) {
+            // 判断返回内容是否为空
+            if (res.data.data.total === 0) {
+              this.searchShow = true
+            } else {
+              // 展示内容
+              this.articleList = res.data.data.records
+              if (this.loginStatus) {
+                this.getCollectArticles()
+              } else {
+                this.articleList.forEach(item => {
+                  item.isOn = false
+                })
+              }
+            }
+          } else {
+            this.$message({
+              message: '获取个人收藏内容失败',
+              type: 'error'
+            })
+          }
+        } catch (err) {
+          this.$message({
+            message: '网络请求错误',
+            type: 'error'
+          })
+        }
+      } else {
+        this.$message({
+          message: '搜索内容不能为空',
+          type: 'error'
+        })
+      }
     }
   }
 }
@@ -177,6 +266,17 @@ export default {
 .shieldHeight {
   height: 40px;
 }
+.noFind {
+  width: 80%;
+  height: 100px;
+  margin: 20px auto;
+  margin-bottom: 20px;
+  border: 2px solid #E4E7ED;
+  border-radius: 5px;
+  background-color: #E4E7ED;
+  text-align: center;
+  line-height: 100px;
+}
 // 文章动态展示区
 .contentList {
   width: 80%;
@@ -208,6 +308,11 @@ export default {
     border: 2px solid #E4E7ED;
     border-radius: 5px;
     background-color: #E4E7ED;
+    padding: 5px;
+    .el-image {
+      height: 100px;
+      width: 100%;
+    }
     .thumbnailsImgDec {
       display: flex;
       justify-content: space-around;
@@ -228,7 +333,7 @@ export default {
   .listStyleArticle {
     width: 70%;
     min-width: 200px;
-    height: 150px;
+    height: 100px;
     margin: 0 auto 20px;
     border: 2px solid #E4E7ED;
     border-radius: 5px;
@@ -237,8 +342,10 @@ export default {
     .el-image {
       float: left;
       height: 100%;
+      width: 15%;
     }
     .listStyleImgDec {
+      position: relative;
       display: grid;
       grid-template-columns: auto auto;
       height: 100%;
@@ -246,7 +353,7 @@ export default {
       padding: 0 5px 0 10px;
       min-width: 50px;
       div {
-        font-size: 150%;
+        font-size: 100%;
         overflow : hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
@@ -254,7 +361,9 @@ export default {
         -webkit-box-orient: vertical;
       }
       i {
-        align-self: flex-end;
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
       }
     }
   }

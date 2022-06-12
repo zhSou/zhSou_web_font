@@ -35,8 +35,14 @@ export const delUser = () => Require({
 })
 
 // 获取个人收藏夹请求
-export const getFolders = (params) => Require({
+export const getFolders = () => Require({
   url: '/api/getFolderByUser',
+  method: 'post'
+})
+
+// 获取个人收藏夹所有内容请求
+export const getFavoritesByUser = () => Require({
+  url: '/api/getFavoritesByUser',
   method: 'post'
 })
 
@@ -85,6 +91,20 @@ export const delFolder = (params) => Require({
 // 重命名收藏夹请求
 export const reNameFolder = (params) => Require({
   url: '/api/reNameFolder',
+  method: 'post',
+  data: params
+})
+
+// 搜索文章请求
+export const query = (params) => Require({
+  url: '/searchApi/query',
+  method: 'post',
+  data: params
+})
+
+// 搜索指定文章请求
+export const getDocuments = (params) => Require({
+  url: '/searchApi/getDocuments',
   method: 'post',
   data: params
 })

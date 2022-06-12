@@ -41,7 +41,8 @@
 
 <script>
 import collectDropDown from '@/components/CollectDropDown.vue'
-import { delTokenStr } from '@/utils/storage.js'
+// import { delTokenStr } from '@/utils/storage.js'
+import Cookies from 'js-cookie'
 
 export default {
   name: 'SearchHead',
@@ -64,7 +65,8 @@ export default {
   methods: {
     // 退出登录
     logout () {
-      delTokenStr()
+      // delTokenStr()
+      Cookies.remove('jwtToken')
       this.$store.commit('setToken', '')
       this.$message({
         message: '已退出登录',

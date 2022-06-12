@@ -24,24 +24,27 @@
 <script>
 export default {
   name: 'shieldView',
+  watch: {
+    shieldList (value) {
+      this.$emit('shield', value)
+    }
+  },
   data () {
     return {
       word: '',
-      shieldList: ['ads']
+      shieldList: []
     }
   },
   methods: {
     // 删除列表元素
     deleteWord (index) {
       this.shieldList.splice(index, 1)
-      console.log('删除成功')
     },
     addWord () {
       if (this.word === '') {
         // 提示错误
       } else {
         this.shieldList.push(this.word)
-        console.log('添加成功')
         this.word = ''
       }
     }

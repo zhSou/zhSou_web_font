@@ -3,7 +3,7 @@
     <h2>欢迎进入注册页面</h2>
     <!-- 表单注册 -->
     <el-form :model="registerForm" :rules="registerFormRules" status-icon
-    ref="registerFormRef" class="register_form">
+    ref="registerFormRef" class="register_form" @submit.native.prevent>
       <el-form-item prop="userName">
         <el-input v-model="registerForm.userName" placeholder="请输入用户名">
           <i slot="prefix" class="iconfont">&#xe63d;</i>
@@ -20,7 +20,7 @@
       </el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="register()">注册</el-button>
+        <el-button type="primary" native-type="submit" @click="register()">注册</el-button>
       </el-form-item>
     </el-form>
     <div class="toLog">

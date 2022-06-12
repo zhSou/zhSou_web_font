@@ -16,7 +16,9 @@
 <script>
 import CollectDropDown from '@/components/CollectDropDown.vue'
 import { delUser } from '@/api/index'
-import { delTokenStr } from '@/utils/storage'
+// import { delTokenStr } from '@/utils/storage'
+import Cookies from 'js-cookie'
+
 export default {
   name: 'UserInfo',
   components: { CollectDropDown },
@@ -29,13 +31,12 @@ export default {
     async deleteUser () {
       try {
         const res = await delUser()
-        console.log(res)
         if (res.status === 200) {
           this.$store.commit('setUser', {})
-          delTokenStr()
+          // delTokenStr()
+          Cookies.remove('jwtToken')
           this.$store.commit('setToken', '')
           this.$router.push('home')
-          console.log('删除成功')
         }
       } catch (err) {
         this.$message({
@@ -68,8 +69,9 @@ export default {
   .userTitle {
     position: relative;
     line-height: 100px;
+    font-size: 1.5vw;
     span:first-child {
-      margin-left: 50px;
+      margin-left: 1vw;
     }
     .el-button {
       position: absolute;

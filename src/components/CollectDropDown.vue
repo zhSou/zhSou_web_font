@@ -37,7 +37,8 @@
       center width="30%" :modal="false">
         <el-input
           placeholder="请输入收藏夹名称，长度不超过20个字符"
-          v-model="createName" maxlength="20" clearable>
+          v-model="createName" maxlength="20" clearable
+          @keyup.enter.native="newFolder">
         </el-input>
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="newFolder">确 定</el-button>
@@ -49,7 +50,8 @@
       center width="30%" :modal="false">
         <el-input
           placeholder="请输入收藏夹名称，长度不超过20个字符"
-          v-model="newName" maxlength="20" clearable>
+          v-model="newName" maxlength="20" clearable
+          @keyup.enter.native="reName">
         </el-input>
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="reName">确 定</el-button>
@@ -102,8 +104,7 @@ export default {
       immediate: true
     },
     folders: {
-      handler (newValue) {
-        console.log(newValue)
+      handler () {
       },
       immediate: true
     }
@@ -167,7 +168,6 @@ export default {
         const res = await getFavoriteByFolder({
           folderName: name
         })
-        console.log(res.data)
         if (res.status === 200) {
           this.articles = res.data
           this.createName = name
@@ -252,7 +252,6 @@ export default {
         const res = await delFolder({
           folderName: name
         })
-        console.log(res)
         if (res.status === 200) {
           this.folders.splice(index, 1)
         } else {
@@ -275,7 +274,6 @@ export default {
           aid: item.aid,
           folderName: this.currentName
         })
-        console.log('删除收藏内容', res)
         if (res.status === 200) {
           this.articles.splice(index, 1)
         } else {
@@ -299,7 +297,6 @@ export default {
           oldName: this.currentName,
           newName: this.movedName
         })
-        console.log(res)
         if (res.status === 200) {
           this.articles.splice(this.currentIndex, 1)
           this.currentIndex = -1

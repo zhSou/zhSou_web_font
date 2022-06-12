@@ -3,7 +3,7 @@
     <h2>欢迎进入登录页面</h2>
      <!-- 表单登录 -->
     <el-form :model="loginForm" :rules="loginFormRules" status-icon
-    ref="loginFormRef" class="login_form">
+    ref="loginFormRef" class="login_form" @submit.native.prevent>
       <el-form-item prop="username">
         <el-input v-model="loginForm.username" placeholder="请输入用户名" >
           <i slot="prefix" class="iconfont">&#xe63d;</i>
@@ -16,7 +16,7 @@
         </el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="login()">登录</el-button>
+        <el-button type="primary" native-type="submit" @click.native="login()">登录</el-button>
       </el-form-item>
     </el-form>
     <div class="toReg">

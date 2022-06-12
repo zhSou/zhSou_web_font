@@ -10,6 +10,14 @@ module.exports = defineConfig({
         pathRewrite: {
           '^/api': 'mock/1076974'
         }
+      },
+      'searchApi': {
+        target: 'http://server.zhangzqs.cn:8080',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/searchApi': ''
+        }
       }
     }
   }
