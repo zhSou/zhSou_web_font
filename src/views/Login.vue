@@ -6,13 +6,13 @@
     ref="loginFormRef" class="login_form" @submit.native.prevent>
       <el-form-item prop="userName">
         <el-input v-model="loginForm.userName" placeholder="请输入用户名" >
-          <i slot="prefix" class="iconfont">&#xe63d;</i>
+          <i slot="prefix" class="el-icon-user"></i>
         </el-input>
       </el-form-item>
       <el-form-item prop="password">
         <el-input type="password" v-model="loginForm.password"
         show-password placeholder="请输入密码">
-          <i slot="prefix" class="iconfont">&#xe608;</i>
+          <i slot="prefix" class="iconfont">&#xe8b2;</i>
         </el-input>
       </el-form-item>
       <el-form-item>

@@ -2,9 +2,11 @@
     <div id="collectDropDown">
       <div class="collectAside">
         <ul>
-          <li @click="newVisible = true"><i class="el-icon-plus"></i>新建收藏夹</li>
+          <li @click="newVisible = true"><i class="iconfont">&#xe8c0;</i>新建收藏夹</li>
           <li v-for="(folder,index) in folders" :key="index" class="hoverLi">
-            <div class="folderName" @click="getArticles(folder)">{{folder}}</div>
+            <div class="folderName" @click="getArticles(folder)">
+              <i class="iconfont">&#xe670;</i>{{folder}}
+            </div>
             <span class="folderBtns">
               <i class="el-icon-edit" @click="reNameVisible = true; oldName = folder"></i>
               <i class="el-icon-close" @click="deleteFolder(folder, index)"></i>
