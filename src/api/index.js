@@ -24,7 +24,7 @@ export const logout = () => Require({
 export const register = (params) => Require({
   url: '/api/register',
   method: 'post',
-  data: params
+  params: params
 })
 
 // 获取个人信息请求
