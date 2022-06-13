@@ -41,7 +41,6 @@
 
 <script>
 import collectDropDown from '@/components/CollectDropDown.vue'
-// import { delTokenStr } from '@/utils/storage.js'
 import Cookies from 'js-cookie'
 
 export default {
@@ -65,7 +64,6 @@ export default {
   methods: {
     // 退出登录
     logout () {
-      // delTokenStr()
       Cookies.remove('jwtToken')
       this.$store.commit('setToken', '')
       this.$message({

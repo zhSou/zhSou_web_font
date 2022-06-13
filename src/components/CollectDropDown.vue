@@ -2,7 +2,7 @@
     <div id="collectDropDown">
       <div class="collectAside">
         <ul>
-          <li @click="newVisible = true">新建收藏夹</li>
+          <li @click="newVisible = true"><i class="el-icon-plus"></i>新建收藏夹</li>
           <li v-for="(folder,index) in folders" :key="index" class="hoverLi">
             <div class="folderName" @click="getArticles(folder)">{{folder}}</div>
             <span class="folderBtns">
@@ -14,22 +14,22 @@
       </div>
       <div class="collectMain" :class="show">
         <!-- 图片缩略图循环 -->
-        <div :class="show + 'Article'" v-for="(item, index) in articles"
-        :key="item.aid">
+        <div :class="show + 'Article'" v-for="(item, index) in this.$store.state.articles"
+        :key="index">
           <!-- 图片 -->
           <el-image :src="item.url" fit="contain"></el-image>
           <!-- 文字描述部分 -->
           <div :class="show + 'ImgDec'">
-            <div>{{item.raw}}</div>
+            <div>{{item.text}}</div>
+            <!-- 按钮 -->
+            <el-dropdown :class="show + 'Btns'">
+              <i class="el-icon-more"></i>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item @click.native="deleteArticle(index)">取消收藏</el-dropdown-item>
+                <el-dropdown-item @click.native="moveVisible = true; currentIndex = index">移动到</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
-          <!-- 按钮 -->
-          <el-dropdown :class="show + 'Btns'">
-            <i class="el-icon-more"></i>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="deleteArticle(item, index)">取消收藏</el-dropdown-item>
-              <el-dropdown-item @click.native="moveVisible = true; currentIndex = index">移动到</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
         </div>
       </div>
       <!-- 新增收藏夹对话框 -->
@@ -110,14 +110,12 @@ export default {
     }
   },
   mounted () {
-    this.getUserFolders()
-    this.currentName = this.folders[0]
-    this.getArticles(this.currentName)
+    if (this.$store.state.token !== '') {
+      this.getUserFolders()
+    }
   },
   data () {
     return {
-      // 收藏内容列表
-      articles: [],
       // 收藏夹列表
       folders: [],
       // 收藏内容展示样式
@@ -139,7 +137,8 @@ export default {
       // 移动至的文件夹名称
       movedName: '',
       // 当前选择的文章
-      currentIndex: -1
+      currentIndex: -1,
+      colorIndex: -1
     }
   },
   methods: {
@@ -147,8 +146,9 @@ export default {
     async getUserFolders () {
       try {
         const res = await getFolders()
-        if (res.status === 200) {
+        if (res.status === 200 && res.data.code === '0') {
           this.folders = res.data.data
+          this.getArticles(res.data.data[0])
         } else {
           this.$message({
             message: '获取收藏夹失败',
@@ -168,9 +168,10 @@ export default {
         const res = await getFavoriteByFolder({
           folderName: name
         })
-        if (res.status === 200) {
-          this.articles = res.data
-          this.createName = name
+        if (res.status === 200 && res.data.code === '0') {
+          const data = JSON.parse(res.data.data).data.documents
+          this.$store.commit('setArticles', data)
+          this.currentName = name
         } else {
           this.$message({
             message: '获取文章失败',
@@ -268,14 +269,14 @@ export default {
       }
     },
     // 删除收藏内容
-    async deleteArticle (item, index) {
+    async deleteArticle (index) {
       try {
         const res = await delFavorite({
-          aid: item.aid,
+          aid: index,
           folderName: this.currentName
         })
-        if (res.status === 200) {
-          this.articles.splice(index, 1)
+        if (res.status === 200 && res.data.code === '0') {
+          this.getArticles(this.currentName)
         } else {
           this.$message({
             message: '取消收藏失败',
@@ -293,14 +294,16 @@ export default {
     async moveArticle () {
       try {
         const res = await updateFavorite({
-          aid: this.articles[this.currentIndex].aid,
+          aid: this.currentIndex,
           oldName: this.currentName,
           newName: this.movedName
         })
         if (res.status === 200) {
-          this.articles.splice(this.currentIndex, 1)
+          // this.$store.state.articles.splice(this.currentIndex, 1)
+          this.getArticles()
           this.currentIndex = -1
           this.movedName = ''
+          this.moveVisible = false
         } else {
           this.$message({
             message: '移动失败',
@@ -380,8 +383,14 @@ export default {
     padding: 0 10px;
     margin-bottom: 20px;
     .thumbnailsImgDec {
+      position: relative;
       div {
         font-size: 20%;
+      }
+      .thumbnailsBtns {
+        position: absolute;
+        bottom: 1px;
+        right: 5px;
       }
     }
   }
@@ -409,15 +418,19 @@ export default {
       padding: 5px;
     }
     .listStyleImgDec {
+      position: relative;
       padding: 5px;
       font-size: 16px;
+      .listStyleBtns {
+        position: absolute;
+        bottom: 1px;
+        right: 5px;
+      }
     }
   }
   .listStyleArticle:hover {
     background-color: #f4f4f4;
     cursor: pointer;
-  }
-  .listStyleBtns {
   }
 }
 </style>

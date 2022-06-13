@@ -42,11 +42,22 @@
         <!-- 引入添加入收藏夹弹窗组件 -->
         <add-collect :show="collectFormVisible" @colStatus="colStatus"
         :colIndex="colIndex"></add-collect>
+        <div class="pagination" v-show="articleList.length!==0">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="currentPage"
+            :page-sizes="[30, 40, 50, 60]"
+            :page-size="size"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total">
+          </el-pagination>
+        </div>
     </div>
 </template>
 
 <script>
-import { getFavoritesByUser, query } from '@/api'
+import { getFavoritesByUser, getArticle } from '@/api'
 import addCollect from '@/components/AddCollect.vue'
 import shieldView from '@/components/ShieldView.vue'
 
@@ -67,8 +78,12 @@ export default {
       showStyle: 'listStyle',
       collectIcon: '',
       collectFormVisible: false,
-      colIndex: -1,
-      searchShow: false
+      colIndex: [],
+      searchShow: false,
+      total: 0,
+      currentPage: 1,
+      pageForm: {},
+      size: 30
     }
   },
   computed: {
@@ -89,14 +104,11 @@ export default {
       // 未登录状态不能使用收藏功能
       if (this.loginStatus) {
         // 根据传入的index找到对应元素的图标,并判断该元素是否为被收藏状态
-        if (this.articleList[index].isOn) {
-          // 取消收藏
-          this.articleList[index].isOn = false
-        } else {
+        if (!this.articleList[index].isOn) {
           // 打开对话框
           this.collectFormVisible = true
           // 传入选择元素的索引
-          this.colIndex = index
+          this.colIndex = [this.articleList[index].id, index]
         }
       } else {
         // 未登录状态，提示登录才能使用收藏功能。
@@ -109,9 +121,9 @@ export default {
     // 用于判断该元素是否被添加进收藏夹
     colStatus (value) {
       // 当前状态为未收藏状态，需要判断打开收藏夹后是否进行收藏了
-      if (this.articleList[value[0]].isOn === false) {
+      if (this.articleList[value[0][1]].isOn === false) {
         // 根据返回值激活收藏状态
-        this.articleList[value[0]].isOn = value[1]
+        this.articleList[value[0][1]].isOn = value[1]
       }
       // 需要将对话框状态转换关闭
       this.collectFormVisible = false
@@ -123,12 +135,12 @@ export default {
     async getCollectArticles () {
       try {
         const res = await getFavoritesByUser()
-        if (res.status === 200) {
-          for (const key in res.data.favorites) {
-            res.data.favorites[key].forEach(item => {
-              // 遍历每个收藏夹的文章,进行判断是否被收藏
+        if (res.status === 200 && res.data.code === '0') {
+          for (const key in res.data.data.favorites) {
+            const data = JSON.parse(res.data.data.favorites[key]).data
+            for (const id in data) {
               this.articleList.filter((el, index) => {
-                if (el.id === item.aid) {
+                if (el.id === id) {
                   this.$set(this.articleList[index], 'isOn', true)
                   return true
                 } else {
@@ -136,11 +148,11 @@ export default {
                   return false
                 }
               })
-            })
+            }
           }
-        } else {
+        } else if (res.data.code === '1') {
           this.$message({
-            message: '获取个人收藏内容失败',
+            message: 'res.data.info',
             type: 'error'
           })
         }
@@ -155,23 +167,24 @@ export default {
     async search () {
       if (this.form.input !== '') {
         try {
-          const res = await query({
+          const res = await getArticle({
             query: this.form.input,
             page: 2,
             limit: 40,
-            filterWord: this.form.shieldWords,
-            highLight: {
-              preTag: '<span style=\'color:red\'>',
-              postTag: '</span>'
-            }
+            filterWord: this.form.shieldWords
           })
-          if (res.status === 200 && res.data.code === 0) {
+          if (res.status === 200 && res.data.code === '0') {
             // 判断返回内容是否为空
             if (res.data.data.total === 0) {
               this.searchShow = true
             } else {
               // 展示内容
-              this.articleList = res.data.data.records
+              this.pageForm = {
+                query: this.form.input,
+                filterWord: this.form.shieldWords
+              }
+              this.total = res.data.data.total
+              this.articleList = res.data.data.articleModel
               if (this.loginStatus) {
                 this.getCollectArticles()
               } else {
@@ -198,9 +211,82 @@ export default {
           type: 'error'
         })
       }
+    },
+    async handleSizeChange (val) {
+      try {
+        const res = await getArticle({
+          query: this.pageForm.query,
+          page: this.currentPage,
+          limit: val,
+          filterWord: this.pageForm.filterWord
+        })
+        if (res.status === 200 && res.data.code === '0') {
+          // 判断返回内容是否为空
+          if (res.data.data.total === 0) {
+            this.searchShow = true
+          } else {
+            this.total = res.data.data.total
+            this.articleList = res.data.data.articleModel
+            if (this.loginStatus) {
+              this.getCollectArticles()
+            } else {
+              this.articleList.forEach(item => {
+                item.isOn = false
+              })
+            }
+          }
+        } else {
+          this.$message({
+            message: '获取个人收藏内容失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
+    },
+    async handleCurrentChange (val) {
+      try {
+        const res = await getArticle({
+          query: this.pageForm.query,
+          page: val,
+          limit: this.size,
+          filterWord: this.pageForm.filterWord
+        })
+        if (res.status === 200 && res.data.code === '0') {
+          // 判断返回内容是否为空
+          if (res.data.data.total === 0) {
+            this.searchShow = true
+          } else {
+            this.total = res.data.data.total
+            this.articleList = res.data.data.articleModel
+            if (this.loginStatus) {
+              this.getCollectArticles()
+            } else {
+              this.articleList.forEach(item => {
+                item.isOn = false
+              })
+            }
+          }
+        } else {
+          this.$message({
+            message: '获取个人收藏内容失败',
+            type: 'error'
+          })
+        }
+      } catch (err) {
+        this.$message({
+          message: '网络请求错误',
+          type: 'error'
+        })
+      }
     }
   }
 }
+
 </script>
 
 <style lang="less" scoped>
@@ -214,7 +300,7 @@ export default {
 // 搜索框样式
 .searchBox {
   width: 50%;
-  margin: 0 auto;
+  margin: 0 auto 10px;
   padding: 10px;
   text-align: center;
   border: 2px solid #E4E7ED;
@@ -276,6 +362,15 @@ export default {
   background-color: #E4E7ED;
   text-align: center;
   line-height: 100px;
+}
+.pagination {
+  width: 50%;
+  margin: 20px auto;
+  margin-bottom: 20px;
+  border: 2px solid #E4E7ED;
+  border-radius: 5px;
+  background-color: #E4E7ED;
+  text-align: center;
 }
 // 文章动态展示区
 .contentList {

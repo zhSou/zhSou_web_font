@@ -6,14 +6,10 @@
 
 <script>
 import Layout from '@/components/Layout.vue'
-// import { delTokenStr } from '@/utils/storage'
 
 export default {
   name: 'app',
   components: { Layout }
-  /* mounted () {
-    window.onbeforeunload = () => delTokenStr()
-  } */
 }
 </script>
 

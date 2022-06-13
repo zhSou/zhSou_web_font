@@ -10,6 +10,7 @@ import '@/assets/font/iconfont.css'
 
 // 引入动态背景vue-particles
 import VueParticles from 'vue-particles'
+
 import store from '@/store'
 
 Vue.use(VueParticles)

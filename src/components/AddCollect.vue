@@ -67,8 +67,8 @@ export default {
       default: false
     },
     colIndex: {
-      type: Number,
-      default: -1
+      type: Array,
+      default: () => { return [] }
     }
   },
   emits: {
@@ -85,7 +85,9 @@ export default {
     }
   },
   mounted () {
-    this.getUserFolders()
+    if (this.$store.state.token !== '') {
+      this.getUserFolders()
+    }
   },
   watch: {
     //  深度监听对话框显示状态
@@ -111,17 +113,17 @@ export default {
       // 调用接口
       try {
         const obj = {
-          aid: this.colIndex,
-          folderName: []
+          aid: this.colIndex[0],
+          folderName: ''
         }
         this.collectForm.forEach(elem => {
           if (elem.checked === true) {
             // 获取选中的文件夹名称
-            obj.folderName.push(elem.name)
+            obj.folderName = elem.name
           }
         })
         const res = await addFavorite(obj)
-        if (res.status === 200) {
+        if (res.status === 200 && res.data.code === '0') {
           // 收藏完成
           // 返回收藏状态,重置表单状态
           this.$emit('colStatus', [this.index, true])
@@ -270,10 +272,10 @@ export default {
     async deleteFolder (name, index) {
       try {
         const res = await delFolder({ folderName: name })
-        if (res.status === 200) {
+        if (res.status === 200 && res.data.code === '0') {
           // 需要更新列表
           this.collectForm.splice(index, 1)
-        } else {
+        } else if (res.data.code === '1') {
           this.$message({
             message: '删除收藏夹失败',
             type: 'error'

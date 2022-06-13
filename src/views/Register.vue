@@ -80,7 +80,7 @@ export default {
         if (!valid) return
         try {
           const res = await this.$store.dispatch('userRegister', this.registerForm)
-          if ('token' in res) {
+          if (res.code === '0') {
             // 登录成功
             this.$message({
               message: '注册成功',
@@ -88,9 +88,9 @@ export default {
             })
             // 可进行跳转
             this.$router.push('/home')
-          } else if ('message' in res) {
+          } else if (res.code === '1') {
             this.$message({
-              message: '注册失败，' + res.message,
+              message: '注册失败，' + res.info,
               type: 'error'
             })
           }

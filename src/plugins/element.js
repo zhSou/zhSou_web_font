@@ -19,7 +19,8 @@ import {
   MessageBox,
   Tooltip,
   Aside,
-  Radio
+  Radio,
+  Pagination
 } from 'element-ui'
 
 Vue.use(Aside)
@@ -40,6 +41,7 @@ Vue.use(Checkbox)
 Vue.use(Divider)
 Vue.use(Tooltip)
 Vue.use(Radio)
+Vue.use(Pagination)
 
 Vue.prototype.$msgbox = MessageBox
 Vue.prototype.$alert = MessageBox.alert

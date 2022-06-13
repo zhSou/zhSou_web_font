@@ -16,7 +16,6 @@
 <script>
 import CollectDropDown from '@/components/CollectDropDown.vue'
 import { delUser } from '@/api/index'
-// import { delTokenStr } from '@/utils/storage'
 import Cookies from 'js-cookie'
 
 export default {
@@ -31,9 +30,9 @@ export default {
     async deleteUser () {
       try {
         const res = await delUser()
+        console.log(res)
         if (res.status === 200) {
           this.$store.commit('setUser', {})
-          // delTokenStr()
           Cookies.remove('jwtToken')
           this.$store.commit('setToken', '')
           this.$router.push('home')
