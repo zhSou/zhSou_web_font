@@ -165,6 +165,7 @@ export default {
     },
     // 搜索内容
     async search () {
+      this.searchShow = false
       if (this.form.input !== '') {
         try {
           const res = await getArticle({
@@ -184,12 +185,21 @@ export default {
                 filterWord: this.form.shieldWords
               }
               this.total = res.data.data.total
+              const reg = new RegExp(this.form.input, 'g')
+              res.data.data.articleModel.forEach(item => {
+                // 使用自定义属性实现全部替换
+                // console.log(item)
+                item.text = item.text.replace(reg, `<span style='color:red'>${this.form.input}</span>`)
+              })
               this.articleList = res.data.data.articleModel
+              console.log(this.articleList)
               if (this.loginStatus) {
                 this.getCollectArticles()
               } else {
                 this.articleList.forEach(item => {
                   item.isOn = false
+                  // 使用自定义属性实现全部替换
+                  console.log(item.document.text.replace(reg, `<span style="red">${this.form.input}</span>`))
                 })
               }
             }
@@ -283,6 +293,10 @@ export default {
           type: 'error'
         })
       }
+    },
+    replaceAll (str, f, e) {
+      const reg = new RegExp(f, 'g') // 创建正则RegExp对象
+      return str.replace(reg, e)
     }
   }
 }
