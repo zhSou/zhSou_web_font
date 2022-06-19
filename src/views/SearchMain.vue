@@ -170,8 +170,8 @@ export default {
         try {
           const res = await getArticle({
             query: this.form.input,
-            page: 2,
-            limit: 40,
+            page: this.currentPage,
+            limit: this.size,
             filterWord: this.form.shieldWords
           })
           if (res.status === 200 && res.data.code === '0') {
@@ -192,7 +192,6 @@ export default {
                 item.text = item.text.replace(reg, `<span style='color:red'>${this.form.input}</span>`)
               })
               this.articleList = res.data.data.articleModel
-              console.log(this.articleList)
               if (this.loginStatus) {
                 this.getCollectArticles()
               } else {
@@ -240,6 +239,13 @@ export default {
             if (this.loginStatus) {
               this.getCollectArticles()
             } else {
+              const reg = new RegExp(this.form.input, 'g')
+              res.data.data.articleModel.forEach(item => {
+                // 使用自定义属性实现全部替换
+                // console.log(item)
+                item.text = item.text.replace(reg, `<span style='color:red'>${this.form.input}</span>`)
+              })
+              this.articleList = res.data.data.articleModel
               this.articleList.forEach(item => {
                 item.isOn = false
               })
@@ -271,6 +277,12 @@ export default {
           if (res.data.data.total === 0) {
             this.searchShow = true
           } else {
+            const reg = new RegExp(this.form.input, 'g')
+            res.data.data.articleModel.forEach(item => {
+              // 使用自定义属性实现全部替换
+              item.text = item.text.replace(reg, `<span style='color:red'>${this.form.input}</span>`)
+            })
+            this.articleList = res.data.data.articleModel
             this.total = res.data.data.total
             this.articleList = res.data.data.articleModel
             if (this.loginStatus) {
